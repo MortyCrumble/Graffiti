@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graffiti RPG</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #202020;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+// Setup canvas
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// Player character
+let player = {
+    x: 50,
+    y: 50,
+    width: 50,
+    height: 50,
+    color: '#FF6347',
+    speed: 4,
+    dx: 0,
+    dy: 0
+};
+
+// Walls (where graffiti can be sprayed)
+let walls = [
+    {x: 200, y: 200, width: 300, height: 100, graffiti: false},
+    {x: 600, y: 400, width: 300, height: 100, graffiti: false}
+];
+
+// Handle keyboard input
+function keyDown(e) {
+    if (e.key === 'ArrowRight') {
+        player.dx = player.speed;
+    } else if (e.key === 'ArrowLeft') {
+        player.dx = -player.speed;
+    } else if (e.key === 'ArrowUp') {
+        player.dy = -player.speed;
+    } else if (e.key === 'ArrowDown') {
+        player.dy = player.speed;
+    } else if (e.key === 'Space') {
+        sprayGraffiti();
+    }
+}
+
+function keyUp(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        player.dx = 0;
+    }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        player.dy = 0;
+    }
+}
+
+// Move player
+function movePlayer() {
+    player.x += player.dx;
+    player.y += player.dy;
+    
+    // Boundaries check (prevent player from moving out of the screen)
+    if (player.x < 0) player.x = 0;
+    if (player.y < 0) player.y = 0;
+    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+    if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
+}
+
+// Draw player
+function drawPlayer() {
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+// Draw walls (Graffiti surfaces)
+function drawWalls() {
+    walls.forEach(wall => {
+        ctx.fillStyle = wall.graffiti ? '#ff69b4' : '#808080';
+        ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+    });
+}
+
+// Check if player is near a wall and can spray graffiti
+function sprayGraffiti() {
+    walls.forEach(wall => {
+        if (player.x + player.width > wall.x && player.x < wall.x + wall.width &&
+            player.y + player.height > wall.y && player.y < wall.y + wall.height) {
+            wall.graffiti = true; // Spray graffiti on the wall
+        }
+    });
+}
+
+// Update game
+function update() {
+    movePlayer();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlayer();
+    drawWalls();
+    requestAnimationFrame(update);
+}
+
+// Event listeners for keypresses
+document.addEventListener('keydown', keyDown);
+document.addEventListener('keyup', keyUp);
+
+// Start the game loop
+update();
+
+</script>
+
+</body>
+</html>
